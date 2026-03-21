@@ -1,0 +1,67 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.container{
+    max-width: 400px;
+    min-height: 300px;
+    margin-inline: auto;
+    background-color: rgba(245, 245, 245, 0.929);
+    margin-top: 50px;
+    border-radius: 10px;
+    padding: 15px 10px;
+}
+.container h1{
+    text-align: center;
+}
+.container .alert{
+    margin-top: 30px;
+    text-align: center;
+    background-color: rgba(255, 0, 0, 0.49); 
+    color: white;
+    padding-block: 10px;
+    border-radius: 5px;
+}
+form .fields{
+    margin-top: 50px;
+}
+.fields .field {
+    margin: 10px 0px;
+}
+.fields .field label{
+    font-size: 1.3rem;
+    margin-bottom: 3px;
+}
+.field .p{
+    color: rgba(255, 0, 0, 0.49); 
+    
+}
+.fields .field input{
+    padding: 10px 5px ;
+    width: 100%;
+    border-radius: 5px;
+}
+.fields .field input:focus{
+    outline: none;
+    border: 2px solid green;
+}
+.btn{
+    text-align: center;
+    margin: 15px 0px;
+}
+.btn button{
+    text-align: center;
+    padding: 5px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    background-color: white;
+    border: 2px solid rgba(255, 255, 255, 0.356);
+    transition: all 0.5s ease-in;
+}
+.btn button:hover{
+    background-color: transparent;
+    border: 2px solid rgb(255, 255, 255);
+    font-weight: 800;
+}

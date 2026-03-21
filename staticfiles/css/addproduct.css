@@ -1,0 +1,15 @@
+
+.input{       /* rounded corners */
+    padding: 7px 1rem;       /* extra padding */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);  /* subtle shadow */
+    transition: all 0.2s ease-in-out;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+.input:focus{
+    outline: none;
+    border: 2px solid rgb(25, 230, 25);
+}
+/* .select{
+    padding: 15px 5px;
+} */

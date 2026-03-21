@@ -1,0 +1,42 @@
+
+{% load static %}
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <!-- Brand Logo -->
+    <a href="#" class="brand-link">
+      <img src="{% static 'adminlte/dist/img/AdminLTELogo.png' %}" alt="Logo" class="brand-image img-circle">
+      <span class="brand-text font-weight-light">Sissoko-Room</span>
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Sidebar Menu -->
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+          <li class="nav-item">
+            <a href="{% url 'dashboard' %}" class="nav-link active">
+              <i class="nav-icon fas fa-tachometer-alt"></i>
+              <p class="">Dashboard</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{%url 'products'%}" class="nav-link">
+              <i class="nav-icon fas fa-bag-shopping"></i>
+              <p>Room</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{% url 'orders'%}" class="nav-link">
+              <i class="nav-icon fas fa-cart-plus"></i>
+              <p>Orders</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{%url 'users'%}" class="nav-link">
+              <i class="nav-icon fas fa-users"></i>
+              <p>Users</p>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>

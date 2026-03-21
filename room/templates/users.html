@@ -1,0 +1,80 @@
+{% extends 'base.html'%}
+{%block title%} Users | Room Marketplace {%endblock%}
+{%block content%}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>User Management</h2>
+        <a href="{% url 'register' %}" class="btn btn-primary">
+            + Add User
+        </a>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">User</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>User Name</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Email</th>
+                            <th>Phone Number</th>
+                            <th>Date</th>
+                            <th>Staff</th>
+                            <th>Admin</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Django loop -->
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>
+                                {{user.first_name}}
+                            </td>
+                            <td>
+                                {{user.last_name}}
+                            </td>
+                            <td>
+                                {{user.email}}
+                            </td>
+                            {% if user.phone_number == None %}
+                            <td>no number</td>
+                            {%else%}
+                            <td>{{ user.phone_number }}</td>
+                            {%endif%}
+                            <td>{{ user.created_at|date:"Y-m-d" }}</td>
+
+                            <td>{{user.is_staff}}</td>
+                            <td>{{user.is_superuser}}</td>
+
+                            <td class="d-flex justify-content-around">
+                                <i class="fa-solid fa-pen-to-square" style="color:blue; cursor: pointer;"></i>
+                                <i class="fa-solid fa-trash" style="color:red;  cursor: pointer;"></i>
+
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No users</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{%endblock%}

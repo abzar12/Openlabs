@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+{%block extra_css %}
+<link rel="stylesheet" href="{% static 'css/addproduct.css' %}">
+{%endblock%}
+{% block title %} Create Product Listing - Room Marketplace {% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Add New Product</h2>
+    <form method="POST" enctype="multipart/form-data" class="needs-validation shadow-lg p-3 bg-white"
+        style="border-radius: 1rem;">
+        {% csrf_token %}
+        {% if form.errors %}
+        <div class="alert alert-danger">
+            <ul>
+                {% for field in form %}
+                {% for error in field.errors %}
+                <li>{{ field.label }}: {{ error }}</li>
+                {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="id_title" class="form-label">Title</label>
+                {{ form.title}}
+            </div>
+            <div class="col-md-6 d-flex flex-column">
+                <label for="id_category" class="form-label">Category</label>
+                {{ form.category }}
+            </div>
+            <div class="col-md-6">
+                <label for="id_price" class="form-label">Price</label>
+                {{ form.price}}
+            </div>
+            <div class="col-md-6">
+                <label for="id_location" class="form-label">Location</label>
+                {{ form.location}}
+            </div>
+            <div class="col-12 d-flex flex-wrap">
+                <div class="col-md-6">
+                    <label for="id_bedroom" class="form-label">Bedroom</label>
+                    {{ form.bedroom }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_bathroom" class="form-label">Bathroom</label>
+                    {{ form.bathroom}}
+                </div>
+            </div>
+            <div class="col-12 d-flex flex-wrap">
+                <div class="col-md-6">
+                    <label for="id_guest_number" class="form-lable">Guest Number</label>
+                    {{ form.guest_number}}
+                </div>
+                <div class="col-md-6 d-flex flex-column">
+                    <label for="id_type" class="form-label">Type</label>
+                    {{ form.type}}
+                </div>
+            </div>
+            <div class="col-12 d-flex flex-wrap">
+                <div class="col-md-6">
+                    <label for="id_description" class="form-label">Description</label>
+                    {{ form.description}}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_amenities" class="form-label">Amenities</label>
+                    <div class="row">
+                        {% for checkbox in form.amenities %}
+                        <div class="col-6"> <!-- 12 / 2 = 6, so 2 per row -->
+                            <div class="form-check">
+                                {{ checkbox.tag }}
+                                {{ checkbox.choice_label }}
+                            </div>
+                        </div>
+                        {% if forloop.counter|divisibleby:2 %}
+                    </div>
+                    <div class="row"> <!-- Start new row every 2 items -->
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <label for="id_description" class="form-label">Images</label>
+                {{ form.images}}
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary mt-4">Add Product</button>
+    </form>
+</div>
+{% endblock %}

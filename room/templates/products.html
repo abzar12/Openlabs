@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static %}
+<!-- 
+{% block extra_css %} 
+<link rel="stylesheet" href=""> 
+{% endblock%}
+-->
+{% block title %} Products - Room Marketplace {% endblock %}
+
+{%block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Product Management</h2>
+        <a href="{% url 'addProduct' %}" class="btn btn-primary">
+            + Add New Room
+        </a>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Products</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>Product ID</th>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Bedrooom</th>
+                            <th>Bathroom</th>
+                            <th>Guest Number</th>
+                            <th>Amenities</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Django loop -->
+                        {% for product in products %}
+                        <tr>
+                            <td>{{product.id}}</td>
+                            <td>{{product.title}}</td>
+                            <td>{{product.category}}</td>
+                            <td>{{product.price}}</td>
+                            <td>{{product.bedroom}}</td>
+                            <td>{{product.bathroom}}</td>
+                            <td>{{product.guest_number}}</td>
+                            <td>{{amenities.name | truncatechars:50 }} </td>
+                            <td>{{product.description | truncatechars:50 }} </td>
+                            <td class="d-flex justify-content-around">
+                                <i class="fa-solid fa-pen-to-square" style="color:blue; cursor: pointer;"></i>
+                                <i class="fa-solid fa-trash" style="color:red;  cursor: pointer;"></i>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">No recent orders</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer text-right">
+                <a href="{% url 'products' %}" class="btn btn-sm btn-primary">
+                    View All Orders
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

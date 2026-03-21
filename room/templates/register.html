@@ -1,0 +1,71 @@
+{% load static%}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/signUpStyle.css' %}">
+    <title>Register | Sissoko-Room</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Create Account</h2>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="">
+                    <div class="field">
+                        <label>User Name</label>
+                        <input type="text" name="username">
+                        <div class="alert">{{form.username.errors }}</div>
+                    </div>
+                </div>
+                <div class="fields">
+                    <div class="field">
+                        <label>First Name</label>
+                        <input type="text" name="first_name">
+                        <div class="alert">{{ form.first_name.errors }}</div>
+                    </div>
+                    <div class="field">
+                        <label>Last Name</label>
+                        <input type="text" name="last_name" value="{{ form.last_name.value|default:'' }}">
+                        <div class="alert">{{ form.last_name.errors }}</div>
+                    </div>
+                </div>
+                <div class="fields">
+                    <div class="field">
+                        <label>Email</label>
+                        <input type="email" name="email" value="{{ form.email.value|default:'' }}">
+                        <div class="alert">{{ form.email.errors }}</div>
+                    </div>
+
+                    <div class="field">
+                        <label>Phone Number</label>
+                        <input type="text" name="phone_number" value="{{ form.phone_number.value|default:'' }}">
+                        <div class="alert">{{ form.phone_number.errors }}</div>
+                    </div>
+                </div>
+                <div class="fields">
+                    <div class="field">
+                        <label>Password</label>
+                        <input type="password" name="password1">
+                        <div class="alert"> {{ form.password1.errors }}</div>
+                    </div>
+
+                    <div class="field">
+                        <label>Confirm Password</label>
+                        <input type="password" name="password2">
+                        <div class="alert">{{ form.password2.errors }}</div>
+                    </div>
+                </div>
+
+                <div class="btn">
+                    <button type="submit">Register</button>
+                </div>
+            <div>Already have an account <a href="{% url 'login' %}">login</a></div>
+            </form>
+    </div>
+</body>
+
+</html>

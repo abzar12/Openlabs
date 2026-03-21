@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{% static 'adminlte/dist/css/adminlte.min.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {%block extra_css %} 
+    {%endblock%}
+    <script src="{% static 'adminlte/plugins/jquery/jquery.min.js' %}"></script>
+    <title>{% block title %} Sissoko-Room {% endblock %}</title>
+</head>
+
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+
+        <!-- Navbar -->
+         {%include 'navbar.html'%}
+        <!-- Sidebar -->
+        {%include 'sidebar.html'%}
+        <div class="content-wrapper p-3">
+            {%block content %}
+            {%endblock%}
+        </div>
+
+    </div>
+    <script src="{% static 'adminlte/plugins/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'adminlte/dist/js/adminlte.min.js' %}"></script>
+</body>
+
+</html>

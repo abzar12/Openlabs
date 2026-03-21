@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/LoginStyle.css' %}">
+    <title>Login | Sissoko-Room</title>
+</head>
+
+<body>
+    <div class="container">
+        <form method="POST">
+            <h1>Login</h1>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+            <div class="alert">
+                {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <div class="fields">
+                <div class="field">
+                    <label for="">Email</label>
+                    {{ form.username }}
+                </div>
+                <div class="field">
+                    <label for="">Password</label>
+                    {{ form.password }}
+                </div>
+            </div>
+            <div class="btn">
+                <button type="submit">Sign-In</button>
+            </div>
+            <div>Don't have an account, <a href="{% url 'register' %}">sign-up</a></div>
+    </div>
+    </form>
+    </div>
+</body>
+
+</html>
