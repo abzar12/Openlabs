@@ -29,7 +29,7 @@ class Amenities(models.Model):
     
 class Room(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='products')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='rooms')
     slug = models.SlugField(unique=True, blank= True)
     title = models.CharField(max_length=200, null= False)
     category = models.CharField(max_length=200, null= False)
@@ -62,14 +62,14 @@ class Room(models.Model):
     def __str__(self):
         return str(self.uuid) or self.slug
 class Orders(models.Model):
+
     order_number = models.CharField(max_length=30, unique=True, blank=True)
-    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL , on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL , on_delete=models.CASCADE, related_name='orders')
     reference = models.CharField(max_length=100, blank=True, unique=True)
-    Amount = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_method = models.CharField(max_length=100, blank=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_method = models.CharField(max_length=100, blank=True, default='cast')
     payment_status = models.CharField(max_length=100, default="unpaid")
-    delevery_method = models.CharField(max_length=100, blank=False)
+    delevery_method = models.CharField(max_length=100, blank=True, null=True)
     order_status = models.CharField(max_length=100, default="pending")
     created_at = models.DateTimeField(auto_now_add=True)
     
@@ -81,10 +81,16 @@ class Orders(models.Model):
                 last_id = last_order.id + 1
             else:
                 last_id = 1
-            self.order_number = f"ORD-{now().year}-{last_id:04d}"
-        
+            self.order_number = f"ORD-{year}-{last_id:04d}"
+            self.reference = f"REF-{year}-{last_id:04d} "
         super().save(*arg, **kwargs)
         
     def __str__(self):
         return self.order_number or self.room
+class OrderItems(models.Model):
+    order = models.ForeignKey(Orders, on_delete=models.CASCADE, related_name='orderitems')
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='orderitems')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)  # room.price * quantity
     
+    def __str__(self):
+        return self.order or self.room

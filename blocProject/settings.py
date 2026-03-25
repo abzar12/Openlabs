@@ -45,11 +45,16 @@ INSTALLED_APPS = [
     'room',
     "corsheaders",
 ]
-
+# --------------JWT Authentification
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'room.authentication.CookieJWTAuthentication',       # ✅ first
+        'rest_framework.authentication.TokenAuthentication',
     ),
+    # 'DEFAULT_PERMISSION_CLASSES': (
+    #     'rest_framework.permissions.IsAuthenticated',
+    # ),
 }
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
@@ -60,6 +65,10 @@ SIMPLE_JWT = {
     'AUTH_COOKIE_PATH': '/',
     'AUTH_COOKIE_SAMESITE': 'Lax',
 }
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:4200"
+]
+# -------------- END HERE JWT Authentification
 
 AUTH_USER_MODEL = "room.User"
 
@@ -162,3 +171,4 @@ LOGIN_REDIRECT_URL = '/sissoko-room/dashboard/'  # after login
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
 ]
+CORS_ALLOW_CREDENTIALS = True

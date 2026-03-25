@@ -1,36 +1,56 @@
-
-      <table class="table table-hover text-nowrap">
-        <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Customer</th>
-            <th>Status</th>
-            <th>Date</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Django loop -->
-          {% for order in orders %}
-          <tr>
-            <td>{{ order.order_number }}</td>
-            <td>{{ order.user_email }}</td>
-            <td>
-              {% if order.status == "paid" %}
-                <span class="badge badge-success">Paid</span>
-              {% elif order.status == "pending" %}
-                <span class="badge badge-warning">Pending</span>
-              {% else %}
-                <span class="badge badge-danger">Cancelled</span>
-              {% endif %}
-            </td>
-            <td>{{ Product.created_at|date:"Y-m-d" }}</td>
-            <td>${{ Product.total_amount }}</td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="5" class="text-center">No recent orders</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+<table class="table table-hover text-nowrap">
+  <thead>
+    <tr>
+      <th class="text-center">Order ID</th>
+      <th class="text-center">Email</th>
+      <th class="text-center">Location</th>
+      <th class="text-center">Phone Number</th>
+      <th class="text-center">Payment Status</th>
+      <th class="text-center">Order Method</th>
+      <th class="text-center">Date</th>
+      <th class="text-center">Total Amount</th>
+      <th class="text-center">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Django loop -->
+    {% for order in orders %}
+    <tr>
+      <td class="text-center">{{ order.order_number }}</td>
+      <td class="text-center">{{ order.user.email }}</td>
+      <td class="text-center">{{ order.user.localization }}</td>
+      <td class="text-center">{{ order.user.phone_number }}</td>
+      <td>
+        {% if order.payment_status == "paid" %}
+        <span class=" font-weight-bold text-center">Paid</span>
+        {% else %}
+        <span class=" font-weight-bold text-center">Unpaid</span>
+        {% endif %}
+      </td>
+      <td class="text-center">
+        {% if order.order_status == 'pending' %}
+        <span class="badge badge-warning text-center">Pending</span>
+        {% elif order.order_status == 'confirmed' %}
+        <span  class="badge badge-success text-center">Confirmed</span>
+        {% else %}
+        <span class="badge badge-secondary text-center">Completed</span>
+        {% endif %}
+      </td>
+      <td class="text-center">{{ order.created_at|date:"Y-m-d" }}</td>
+      <td class="text-center">{{ order.total_amount }} <span class="text-sm font-weight-bold ">GHS</span></td>
+      <td class="text-center">
+        <a href="#" class="btn btn-sm btn-primary">View</a>
+        {%if order.order_status == 'confirmed' %}
+        <a href="#" class="btn btn-sm btn-success">Completed</a>
+        {% else %}
+        <a href="{% url 'confirmed_order' order.id%}" class="btn btn-sm btn-secondary">confirmed</a>
+        {%endif%}
+        <a href="{% url 'delete_order' order.id %}" class="btn btn-sm btn-danger">Delete</a>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="5" class="text-center">No recent orders</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

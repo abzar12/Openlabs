@@ -11,10 +11,16 @@ urlpatterns = [
     path('add-product/', views.AddProduct, name='addProduct'),
     path('products/', views.Products_view, name='products'),
     path('orders/', views.orders_page, name='orders'),
+    path('order/delete/<int:order_id>', views.delete_Order, name='delete_order'),
+    path('order/confirmed/<int:order_id>', views.confirmOrder_view, name='confirmed_order'),
     #-------------------- public url
     path('api/getproducts', views.GetAllProducts, name='getProducts'),
     path('api/products/add', views.create_Products, name='setProducts' ),
-    path('api/product/<slug:slug>', views.getProduct, name='getProduct'),
+    path('api/product/<slug:slug>/', views.getProduct, name='getProduct'),
     path('api/customer/signup', views.CreateUser, name='signup'),
-    path('api/customer/login', views.LoginUser, name='login')
+    path('api/refreshtk', views.getRefreshToken, name='refreshToken'),
+    path('api/logout', views.Logout, name='logout'),
+    path('api/me', views.getCurrentUser, name='getUser'),
+    path('api/customer/login', views.LoginUser, name='login'),
+    path('api/checkOut/', views.CreateOrders, name='createOrder'),
 ]

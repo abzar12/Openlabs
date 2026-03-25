@@ -1,9 +1,14 @@
 #  serializers 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import ProductSerializers, RegistrationSerializers, LoginSerializer, UserSerializer
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from .serializers import ProductSerializers, RegistrationSerializers, LoginSerializer, UserSerializer, OrdersSerializer
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from rest_framework.permissions import IsAuthenticated
+from decimal import Decimal
+
 # ---------------------
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import RegisterFrom, ProductForm
@@ -14,6 +19,32 @@ from django.contrib.admin.views.decorators import staff_member_required
 from .models import Room, Orders, User, Amenities
 # Create your views here.
 #  -----------------------------------Dashboard view---------------------------------------
+
+#---------------------------- get refresh token
+@api_view(['POST'])
+def getRefreshToken(request):
+    refresh = request.COOKIES.get('refresh_token')
+    
+    if not refresh:
+        return Response({"error": "Unauthorize"}, status=status.HTTP_401_UNAUTHORIZED)
+    try:
+        refresh_token=RefreshToken(refresh)
+        access_token = str(refresh_token.access_token)
+        
+        response = Response({"message": "New Access token given"})
+        
+        response.set_cookie(
+            key='access_token',
+            value=access_token,
+            max_age=15*60,
+            httponly=True,
+            samesite='Lax',
+            secure=False
+            )
+        return response
+    except Exception:
+        return Response({"error": "Invalid Refresh Token"}, status.HTTP_401_UNAUTHORIZED)
+          
 def register_view(request):
     if request.method == "POST":
         form = RegisterFrom(request.POST)
@@ -50,16 +81,39 @@ def dashHome(request):
 def getAlluser_view(request):
     users = User.objects.all()
     return render(request, 'users.html', {'users': users})
-# def Orders_view(request):
+# def Orders_view(request): for dashboard
 @staff_member_required(login_url='login')
 def orders_view(request):
-    recent_orders = Orders.objects.order_by('created_at')[:10]
+    recent_orders = (
+        Orders.objects
+        .exclude(order_status='archived')
+        .order_by('-created_at')
+        .prefetch_related('orderitems__room') 
+        )[:50] # fetch related items and rooms
     return render(request, 'dashboard.html', {"orders": recent_orders})
 
 @staff_member_required(login_url='login')
 def orders_page(request):
-    orders = Orders.objects.all()
+    orders = (
+        Orders.objects
+        .exclude(order_status='archived')
+        .order_by('-created_at')
+        .prefetch_related('orderitems__room') 
+        )[:100]
     return render(request, 'orderPage.html', {'orders': orders})
+#  delete un orders 
+def delete_Order(request, order_id):
+    order = get_object_or_404(Orders, id=order_id)
+    print("POST REQUEST")  # 👈 add this
+    order.order_status = 'archived'
+    order.save()
+    return redirect('orders')
+# confirm un order 
+def confirmOrder_view(request, order_id):
+    order = get_object_or_404(Orders, id=order_id)
+    order.order_status = 'confirmed'
+    order.save()
+    return redirect('orders')
 # Products view -----------
 @staff_member_required(login_url='login')
 def AddProduct(request):
@@ -77,7 +131,6 @@ def AddProduct(request):
     else:
         form = ProductForm()
     return render(request, 'createProduct.html', {'form': form})
-
 # -------Get All the products 
 @staff_member_required(login_url='login')
 def Products_view(request):
@@ -125,7 +178,7 @@ def LoginUser(request):
             httponly=True,
             samesite='Lax',  # or 'Strict'
             secure=False,    # True if using HTTPS
-            max_age=5*60     # 5 minutes
+            max_age=15*60     # 15 minutes
         )
 
         # Optional: Set refresh token as well
@@ -135,11 +188,43 @@ def LoginUser(request):
             httponly=True,
             samesite='Lax',
             secure=False,
-            max_age=24*60*60
+            max_age=24*60*60*7
         )
         return response
     return Response(serializers.errors, status=status.HTTP_401_UNAUTHORIZED)
 
+# ---------------------------------Logout
+@api_view(['POST'])
+def Logout(request):
+    logout(request)
+    return Response({"message": "User Logged-Out"})
+
+#---------------------------- get current user
+@api_view(['GET'])
+def getCurrentUser(request):
+    token = request.COOKIES.get('access_token')
+    if not token:
+        return Response({'error': "Not Authenticated"}, 401)
+    try:
+        access_token = AccessToken(token)
+        user_id = access_token['user_id']
+
+        user = User.objects.get(id=user_id)
+
+        return Response({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "role":user.role,
+            "firstname":user.first_name,
+            "lastname":user.last_name,
+            "phone":user.phone_number,
+            "localization":user.localization,
+        })
+    except Exception as e:
+        return Response({'error': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
+    
+#---------------------------------- create Products 
 @api_view(['GET'])
 def GetAllProducts(request):
     room_type = request.query_params.get('type', "All")
@@ -157,7 +242,8 @@ def GetAllProducts(request):
     
     serialiser = ProductSerializers(data, many=True, context={'request': request})
     return Response(serialiser.data, status=status.HTTP_200_OK)
-#---------------------------------- create Products 
+
+# ---------------------------------Create new product
 @api_view(['POST'])
 def create_Products(request):
     serializer = ProductSerializers(data=request.data)
@@ -170,8 +256,49 @@ def create_Products(request):
         })
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# ---------------------------------getProduct product by slug
 @api_view(['GET'])
 def getProduct(request, slug):
     product = get_object_or_404(Room, slug=slug)
     serializer_class = ProductSerializers(product)
     return Response(serializer_class.data, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def CreateOrders(request):
+    token = request.COOKIES.get('access_token')
+    print(request.COOKIES.get('access_token'))
+    if not token:
+        return Response({'error': "Not Authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+    try:
+        jwt_auth = JWTAuthentication()
+        validated_token = jwt_auth.get_validated_token(token)
+        user = jwt_auth.get_user(validated_token)
+    except (InvalidToken, TokenError):
+        return Response({'error': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    data = request.data
+    if not isinstance(data, list):
+        return Response({'error': 'Items must be a list'}, status=status.HTTP_400_BAD_REQUEST)
+    items_for_serializer = []
+    for item in data:
+        uuid = item.get('uuid')
+        if not uuid:
+            return Response({'error': 'UUID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        room = Room.objects.filter(uuid=uuid).first()
+        if not room:
+            return Response({'error': f'Room {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        items_for_serializer.append({
+            'room': room
+        })
+    serializer = OrdersSerializer(data={}, context={'user': user, 'orderitems_data': items_for_serializer})
+    if serializer.is_valid():
+        order = serializer.save()
+        return Response(OrdersSerializer(order).data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    
+        
+         
