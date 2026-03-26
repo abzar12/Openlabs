@@ -3,11 +3,12 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from .serializers import ProductSerializers, RegistrationSerializers, LoginSerializer, UserSerializer, OrdersSerializer
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from .serializers import ProductSerializers, RegistrationSerializers, LoginSerializer, UserSerializer, OrdersSerializer
 from decimal import Decimal
+from django.db.models import Sum
 
 # ---------------------
 from django.shortcuts import render, redirect, get_object_or_404
@@ -75,7 +76,22 @@ def logout_view(request):
     return redirect('login')
 @staff_member_required(login_url='login')
 def dashHome(request):
-    return render(request, "dashHome.html")
+    users = User.objects.count()
+    orders_number = Orders.objects.count()
+    total_orders = Orders.objects.filter(payment_status='paid').aggregate(total=Sum('total_amount'))['total']
+    orders = (
+        Orders.objects
+        .exclude(order_status__in=['archived','completed'])
+        .order_by('-created_at')
+        .prefetch_related('orderitems__room') 
+        )[:50]
+    context = {
+        'users': users,
+        'orders_number': orders_number,
+        'totalAmount_orders':total_orders,
+        'orders': orders,
+    }
+    return render(request, "dashHome.html", context)
 # --------------get all admin user
 @staff_member_required(login_url='login')
 def getAlluser_view(request):
@@ -84,23 +100,37 @@ def getAlluser_view(request):
 # def Orders_view(request): for dashboard
 @staff_member_required(login_url='login')
 def orders_view(request):
-    recent_orders = (
-        Orders.objects
-        .exclude(order_status='archived')
-        .order_by('-created_at')
-        .prefetch_related('orderitems__room') 
-        )[:50] # fetch related items and rooms
-    return render(request, 'dashboard.html', {"orders": recent_orders})
+    orders = Orders.objects.prefetch_related('orderitems__room').order_by('-created_at')
+    # Get status from GET parameters
+    status = request.GET.get('status', '').strip()  # default to empty string if not provided
+    if status:
+        orders = orders.filter(order_status=status)
+    else:
+        # Exclude archived orders if no specific status is selected
+        orders = orders.exclude(order_status='archived')
+    # Limit to 50 latest orders
+    orders = orders[:50]
+    context = {
+        'orders': orders
+    }
+    return render(request, 'dashboard.html', context)
 
 @staff_member_required(login_url='login')
 def orders_page(request):
-    orders = (
-        Orders.objects
-        .exclude(order_status='archived')
-        .order_by('-created_at')
-        .prefetch_related('orderitems__room') 
-        )[:100]
-    return render(request, 'orderPage.html', {'orders': orders})
+    orders = Orders.objects.prefetch_related('orderitems__room').order_by('-created_at')
+    # Get status from GET parameters
+    status = request.GET.get('status', '').strip()  # default to empty string if not provided
+    if status:
+        orders = orders.filter(order_status=status)
+    else:
+        # Exclude archived orders if no specific status is selected
+        orders = orders.exclude(order_status='archived')
+    # Limit to 50 latest orders
+    orders = orders[:100]
+    context = {
+        'orders': orders
+    }
+    return render(request, 'orderPage.html', context)
 #  delete un orders 
 def delete_Order(request, order_id):
     order = get_object_or_404(Orders, id=order_id)
@@ -109,9 +139,12 @@ def delete_Order(request, order_id):
     order.save()
     return redirect('orders')
 # confirm un order 
-def confirmOrder_view(request, order_id):
+def EditStatusOrder_view(request, order_id):
+    status= request.GET.get('status')
     order = get_object_or_404(Orders, id=order_id)
-    order.order_status = 'confirmed'
+    if status == 'completed':
+        order.payment_status = 'paid'
+    order.order_status = status
     order.save()
     return redirect('orders')
 # Products view -----------
@@ -123,7 +156,7 @@ def AddProduct(request):
             product = form.save(commit=False)
             product.user = request.user
             product.save()
-            product.save_m2m()
+            form.save_m2m()
             return redirect("addProduct")
         else:
             print("Form errors:", form.errors)
@@ -131,12 +164,30 @@ def AddProduct(request):
     else:
         form = ProductForm()
     return render(request, 'createProduct.html', {'form': form})
+# ---------------------- edit product 
+@staff_member_required(login_url='login')
+def EditRoom_view(request, room_id):
+    room = get_object_or_404(Room, id=room_id)
+    if request.method == "POST":
+        form = ProductForm(request.POST, request.FILES, instance=room)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.save()
+            form.save_m2m()
+            return redirect('rooms')
+        else:
+            print('form errors:', form.errors)
+            # print(form.errors)
+    else:
+        form  = ProductForm(instance=room)
+        
+    return render(request, 'editRoom.html', {'form': form , 'room': room})
 # -------Get All the products 
 @staff_member_required(login_url='login')
 def Products_view(request):
-    products = Room.objects.all()
+    rooms = Room.objects.all()
     # room = Amenities.objects.all()
-    return render(request, 'products.html', {'products': products})
+    return render(request, 'room.html', {'rooms': rooms})
             
 #  -----------------------------------Public view---------------------------------------
 

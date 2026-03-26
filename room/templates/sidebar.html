@@ -13,25 +13,25 @@
       <nav class="mt-2">
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
           <li class="nav-item">
-            <a href="{% url 'dashboard' %}" class="nav-link active">
+            <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
               <i class="nav-icon fas fa-tachometer-alt"></i>
               <p class="">Dashboard</p>
             </a>
           </li>
           <li class="nav-item">
-            <a href="{%url 'products'%}" class="nav-link">
+            <a href="{%url 'rooms'%}" class="nav-link {% if request.resolver_match.url_name == 'rooms'  %}active{% endif %}">
               <i class="nav-icon fas fa-bag-shopping"></i>
               <p>Room</p>
             </a>
           </li>
           <li class="nav-item">
-            <a href="{% url 'orders'%}" class="nav-link">
+            <a href="{% url 'orders'%}" class="nav-link {% if request.resolver_match.url_name == 'orders'  %}active{% endif %}">
               <i class="nav-icon fas fa-cart-plus"></i>
               <p>Orders</p>
             </a>
           </li>
           <li class="nav-item">
-            <a href="{%url 'users'%}" class="nav-link">
+            <a href="{%url 'users'%}" class="nav-link {% if request.resolver_match.url_name == 'users'  %}active{% endif %}">
               <i class="nav-icon fas fa-users"></i>
               <p>Users</p>
             </a>

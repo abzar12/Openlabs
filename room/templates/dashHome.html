@@ -4,71 +4,55 @@
 {%block title%} Dashboard | Sissoko-Room {%endblock%}
 
 {% block content %}
-<div class="row d-flex justify-content-around">
+<div class="row d-flex justify-content-around align-items-center">
     <!-- user card -->
     <div class="col-lg-3 col-6">
-        <div class="small-box bg-info">
-            <div class="inner">
-                <h3>150</h3>
-                <p>Users</p>
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-2x text-primary mb-3"></i>
+                <h3 class="card-title">{{users}}</h3>
+                <p class="card-text">Users</p>
+                <a href="{%url 'users'%}" class="btn btn-outline-primary btn-sm">More info</a>
             </div>
-            <div class="icon">
-                <i class="fas fa-users"></i>
-            </div>
-            <a href="#" class="small-box-footer">
-                More info <i class="fas fa-arrow-circle-right"></i>
-            </a>
         </div>
     </div>
     <!-- orders card -->
     <div class="col-lg-3 col-6">
-        <div class="small-box bg-success">
-            <div class="inner">
-                <h3>53</h3>
-                <p>Orders</p>
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-shopping-cart fa-2x text-success mb-3"></i>
+                <h3 class="card-title">{{orders_number}}</h3>
+                <p class="card-text">Orders</p>
+                <a href="{%url 'orders'%}" class="btn btn-outline-success btn-sm">More info</a>
             </div>
-            <div class="icon">
-                <i class="fas fa-shopping-cart"></i>
-            </div>
-            <a href="#" class="small-box-footer">
-                More info <i class="fas fa-arrow-circle-right"></i>
-            </a>
         </div>
     </div>
     <!-- revenue cards -->
     <div class="col-lg-3 col-6">
-        <div class="small-box bg-warning">
-            <div class="inner">
-                <h3>$44,000</h3>
-                <p>Total Sales</p>
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-dollar-sign fa-2x text-warning mb-3"></i>
+                <h3 class="card-title">${{totalAmount_orders}}</h3>
+                <p class="card-text">Total Sales</p>
             </div>
-            <div class="icon">
-                <i class="fas fa-dollar-sign"></i>
-            </div>
-            <a href="#" class="small-box-footer">
-                More info <i class="fas fa-arrow-circle-right"></i>
-            </a>
         </div>
     </div>
-
-
 </div>
-<!-- <div class="row"> -->
-<div class="col-12">
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Recent Orders</h3>
 
-            <div class="card-tools">
-                <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                    <i class="fas fa-minus"></i>
-                </button>
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h3 class="card-title">Recent Orders</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
             </div>
-        </div>
-
-        <div class="card-body table-responsive p-0">
-
-            {% include 'components/order.component.html' %}
+            <div class="card-body table-responsive p-0">
+                {% include 'components/order.component.html' %}
+            </div>
         </div>
     </div>
 </div>

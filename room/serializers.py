@@ -1,8 +1,13 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from .models import Room, User, Orders, OrderItems
+from .models import Room, User, Orders, OrderItems, Amenities
+class AmenitiesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Amenities
+        fields = ['id', 'name']
 class ProductSerializers(serializers.ModelSerializer):
     user_email = serializers.ReadOnlyField(source='user.email')
+    amenities = AmenitiesSerializer(many=True)
     class Meta:
         model = Room
         fields = ['uuid', 'slug', 'user_email' , 'title',  'category', 'price', 'promot_price', 'location', 

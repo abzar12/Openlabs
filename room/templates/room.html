@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static %}
+<!-- 
+{% block extra_css %} 
+<link rel="stylesheet" href=""> 
+{% endblock%}
+-->
+{% block title %} Products - Room Marketplace {% endblock %}
+
+{%block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 >Rooms Management</h2>
+        <a href="{% url 'addProduct' %}" class="btn btn-primary">
+            + Add New Room
+        </a>
+    </div>
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h3 class="card-title">Products</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover table-striped text-nowrap">
+                    <thead>
+                        <tr>
+                            <th class="text-center">Product ID</th>
+                            <th class="text-center">Title</th>
+                            <th class="text-center">Category</th>
+                            <th class="text-center">Price</th>
+                            <th class="text-center">Bedroom</th>
+                            <th class="text-center">Bathroom</th>
+                            <th class="text-center">Guest Number</th>
+                            <th class="text-center">Amenities</th>
+                            <th class="text-center">Description</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Django loop -->
+                        {% for room in rooms %}
+                        <tr>
+                            <td class="text-center">{{ room.id }}</td>
+                            <td class="text-center">{{ room.title }}</td>
+                            <td class="text-center">{{ room.category }}</td>
+                            <td class="text-center">{{ room.price }}</td>
+                            <td class="text-center">{{ room.bedroom }}</td>
+                            <td class="text-center">{{ room.bathroom }}</td>
+                            <td class="text-center">{{ room.guest_number }}</td>
+                            <td class="text-center">{{ room.amenities.name|truncatechars:50 }}</td>
+                            <td class="text-center">{{ room.description|truncatechars:50 }}</td>
+                            <td class="text-center">
+                                <a href="{% url 'editRoom' room.id %}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center">No rooms</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer text-right">
+                <a href="{% url 'rooms' %}" class="btn btn-sm btn-primary">
+                    View All Products
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

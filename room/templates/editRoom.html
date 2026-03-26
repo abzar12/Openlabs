@@ -1,12 +1,14 @@
-{% extends 'base.html' %}
-{% load static %}
+{%extends 'base.html'%}
+{%load static%}
+
+{%block title%} View Room | Sissoko-Room {%endblock%}
 {%block extra_css %}
 <link rel="stylesheet" href="{% static 'css/addproduct.css' %}">
 {%endblock%}
-{% block title %} Create Product Listing - Room Marketplace {% endblock %}
-{% block content %}
+{%block content%}
+
 <div class="container mt-5">
-    <h2 class="mb-4">Add New Product</h2>
+    <h2 class="mb-4">Edit Room</h2>
     <form method="POST" enctype="multipart/form-data" class="needs-validation shadow-lg p-3 bg-white"
         style="border-radius: 1rem;">
         {% csrf_token %}
@@ -86,7 +88,8 @@
                 {{ form.images}}
             </div>
         </div>
-        <button type="submit" class="btn btn-primary mt-4">Add Room</button>
+        <button type="submit" class="btn btn-primary mt-4">Edit Room</button>
     </form>
 </div>
-{% endblock %}
+{%endblock%}
+
