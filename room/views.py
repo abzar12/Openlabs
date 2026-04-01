@@ -51,8 +51,8 @@ def register_view(request):
         form = RegisterFrom(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            User.is_staff=True
-            User.role = "staff"
+            user.is_staff=True
+            user.role = "staff"
             form.save()
             return redirect('login')
         else:

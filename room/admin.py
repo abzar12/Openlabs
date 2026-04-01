@@ -8,6 +8,7 @@ class CustomerUserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
         ("Extra Info", {"fields": ("phone_number",)}),
     )
+    # list_display= ['role']
     search_fields= ['username', 'first_name', 'last_name', 'role', 'email', 'phone_number']
     
 class ProductsAdmin(admin.ModelAdmin):
