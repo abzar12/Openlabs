@@ -195,6 +195,7 @@ LOGIN_REDIRECT_URL = '/sissoko-room/dashboard/'  # after login
 
 # allowed CORS
 CORS_ALLOWED_ORIGINS = [
-    "https://openlabs-mzws.onrender.com/",
+    "https://openlabs-mzws.onrender.com",
+    'localhost', '127.0.0.1'
 ]
 CORS_ALLOW_CREDENTIALS = True
