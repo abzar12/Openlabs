@@ -10,10 +10,12 @@ urlpatterns = [
     path('dashboard/', views.dashHome, name="dashboard"),
     path('add-product/', views.AddProduct, name='addProduct'),
     path('products/', views.Products_view, name='rooms'),
+    path('delete/room/<int:room_id>', views.DeleteRoom, name='deleteRoom'),
     path('edit/room/<int:room_id>', views.EditRoom_view, name='editRoom'),
     path('orders/', views.orders_page, name='orders'),
     path('order/delete/<int:order_id>', views.delete_Order, name='delete_order'),
     path('order/confirmed/<int:order_id>', views.EditStatusOrder_view, name='edit_status'),
+    path('vieworder_items/<int:order_id>', views.viewOrderItems, name='vieworder_items'),
     #-------------------- public url
     path('api/getproducts', views.GetAllProducts, name='getProducts'),
     path('api/products/add', views.create_Products, name='setProducts' ),
@@ -24,4 +26,5 @@ urlpatterns = [
     path('api/me', views.getCurrentUser, name='getUser'),
     path('api/customer/login', views.LoginUser, name='loginApi'),
     path('api/checkOut/', views.CreateOrders, name='createOrder'),
+    path('api/reservedRoom/', views.GetReserveRoom, name='getReserved'),
 ]

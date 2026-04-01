@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
+from django.db import transaction
 from .models import Room, User, Orders, OrderItems, Amenities
 class AmenitiesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -59,38 +60,53 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone_number', 'role']
-        
-class OrderItemsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model= OrderItems
-        fields= ['amount', 'order', 'room']
-        read_only_fields = ['amount', 'order']  # ✅ important
 
+class RoomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Room
+        fields = '__all__'
+    
+class OrderItemsCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItems
+        fields = ['room']
         
 class OrdersSerializer(serializers.ModelSerializer):
-    orderitems = OrderItemsSerializer(many=True, read_only=True)
+    orderitems = OrderItemsCreateSerializer(many=True)
+    
     class Meta:
         model = Orders
-        fields= ['user', 'orderitems', 'total_amount'] # for creating ording we just need room(fk), amount and user(fk)
-        read_only_fields = ['total_amount', 'user']  # ✅ important
-        
+        fields = '__all__'  # Use only the fields you need
+        read_only_fields = ['total_amount', 'user']  # Read-only fields
+    
     def create(self, validated_data):
-        user = self.context['user']  # user passed via context
-        orderitems_data = self.context['orderitems_data']  # items passed via context
-
-        # calculate total_amount
-        total_amount = sum(item['room'].price for item in orderitems_data)
-        order = Orders.objects.create(user=user, total_amount=total_amount)
-
-        # create OrderItems
-        for item_data in orderitems_data:
-            OrderItems.objects.create(
-                order=order,
-                room=item_data['room'],
-                amount=item_data['room'].price
+        user = self.context['user']  # Extract user from context
+        total_amount = self.context['total_amount']  # Extract total_amount from context
+        orderitems_data = validated_data.pop('orderitems')  # Extract orderitems from validated data
+        
+        # Use transaction.atomic() for database integrity
+        with transaction.atomic():
+            order = Orders.objects.create(
+                user=user,
+                total_amount=total_amount
             )
+
+            for item_data in orderitems_data:
+                room = item_data.get('room')  # Get the room from the item
+                if not room:
+                    continue  # Skip invalid items
+                OrderItems.objects.create(
+                    order=order,
+                    room=room,
+                    amount=room.price  # Assign room price as the amount
+                )
 
         return order
 
-            
-        
+class OrderItemsSerializer(serializers.ModelSerializer):
+    order = OrdersSerializer(read_only=True)
+    room = RoomSerializer(read_only=True)
+    class Meta:
+        model= OrderItems
+        fields= ['id', 'order', 'room', 'amount']
+        read_only_fields = ['amount', 'order']  # ✅ important

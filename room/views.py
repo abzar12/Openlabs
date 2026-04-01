@@ -6,7 +6,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from .serializers import ProductSerializers, RegistrationSerializers, LoginSerializer, UserSerializer, OrdersSerializer
+from .serializers import ProductSerializers, RegistrationSerializers, LoginSerializer, UserSerializer, OrdersSerializer, OrderItemsSerializer
 from decimal import Decimal
 from django.db.models import Sum
 
@@ -17,7 +17,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.admin.views.decorators import staff_member_required
 # =--------------import model--------
-from .models import Room, Orders, User, Amenities
+from .models import Room, Orders, User, Amenities, OrderItems
 # Create your views here.
 #  -----------------------------------Dashboard view---------------------------------------
 
@@ -50,6 +50,9 @@ def register_view(request):
     if request.method == "POST":
         form = RegisterFrom(request.POST)
         if form.is_valid():
+            user = form.save(commit=False)
+            User.is_staff=True
+            User.role = "staff"
             form.save()
             return redirect('login')
         else:
@@ -76,11 +79,18 @@ def logout_view(request):
     return redirect('login')
 @staff_member_required(login_url='login')
 def dashHome(request):
-    users = User.objects.count()
-    orders_number = Orders.objects.count()
-    total_orders = Orders.objects.filter(payment_status='paid').aggregate(total=Sum('total_amount'))['total']
+    user = request.user
+    if user.is_superuser:
+        users = User.objects.count()
+    else:
+        users = 1
+    orders_number = Orders.objects.filter(orderitems__room__user=user).count()
+    total_orders = Orders.objects.filter(payment_status='paid', orderitems__room__user=user).aggregate(total=Sum('total_amount'))['total']
+    if total_orders == 0 and total_orders == None:
+        total_orders = 0
     orders = (
         Orders.objects
+        .filter(orderitems__room__user=user)
         .exclude(order_status__in=['archived','completed'])
         .order_by('-created_at')
         .prefetch_related('orderitems__room') 
@@ -95,12 +105,15 @@ def dashHome(request):
 # --------------get all admin user
 @staff_member_required(login_url='login')
 def getAlluser_view(request):
+    if not  request.user.is_superuser:
+        return redirect('login')
     users = User.objects.all()
     return render(request, 'users.html', {'users': users})
 # def Orders_view(request): for dashboard
 @staff_member_required(login_url='login')
 def orders_view(request):
-    orders = Orders.objects.prefetch_related('orderitems__room').order_by('-created_at')
+    user = request.user
+    orders = Orders.objects.filter(orderitems__room__user=user).prefetch_related('orderitems__room').order_by('-created_at')
     # Get status from GET parameters
     status = request.GET.get('status', '').strip()  # default to empty string if not provided
     if status:
@@ -109,7 +122,7 @@ def orders_view(request):
         # Exclude archived orders if no specific status is selected
         orders = orders.exclude(order_status='archived')
     # Limit to 50 latest orders
-    orders = orders[:50]
+    orders = orders[:100]
     context = {
         'orders': orders
     }
@@ -117,7 +130,8 @@ def orders_view(request):
 
 @staff_member_required(login_url='login')
 def orders_page(request):
-    orders = Orders.objects.prefetch_related('orderitems__room').order_by('-created_at')
+    user = request.user
+    orders = Orders.objects.filter(orderitems__room__user=user).prefetch_related('orderitems__room').order_by('-created_at')
     # Get status from GET parameters
     status = request.GET.get('status', '').strip()  # default to empty string if not provided
     if status:
@@ -134,16 +148,34 @@ def orders_page(request):
 #  delete un orders 
 def delete_Order(request, order_id):
     order = get_object_or_404(Orders, id=order_id)
-    print("POST REQUEST")  # 👈 add this
+    # print("POST REQUEST")  # 👈 add this
     order.order_status = 'archived'
     order.save()
     return redirect('orders')
-# confirm un order 
+# confirm un order
+@staff_member_required 
+def viewOrderItems(request, order_id):
+    user = request.user
+    orderItems = OrderItems.objects.filter(order__id = order_id, room__user=user).select_related('order', 'room')
+    orderAmount = get_object_or_404(Orders, id=order_id)
+    count = OrderItems.objects.filter(order__id = order_id, room__user=user).count()
+    print('OrderItems', orderItems)
+    # if not orderItems.exists():
+    #     return get_object_or_404(OrderItems, order__id=order_id, room__user=user)
+    return render(request, 'viewOrderItems.html', {'order_Items': orderItems, 'orderAmount': orderAmount, 'count':count})
+    
 def EditStatusOrder_view(request, order_id):
+    user = request.user
     status= request.GET.get('status')
     order = get_object_or_404(Orders, id=order_id)
     if status == 'completed':
         order.payment_status = 'paid'
+        order_items = OrderItems.objects.filter(order=order).select_related('room')
+
+        for item in order_items:
+            room = item.room
+            room.status = 'deleted'
+            room.save()
     order.order_status = status
     order.save()
     return redirect('orders')
@@ -185,10 +217,23 @@ def EditRoom_view(request, room_id):
 # -------Get All the products 
 @staff_member_required(login_url='login')
 def Products_view(request):
-    rooms = Room.objects.all()
+    user = request.user
+    rooms = Room.objects.filter(user=user).prefetch_related('amenities').exclude(status='deleted')
+    # print("room", rooms)
     # room = Amenities.objects.all()
     return render(request, 'room.html', {'rooms': rooms})
-            
+  
+def DeleteRoom(request, room_id):
+    user = request.user
+    if not user:
+        return redirect('login')
+    room = get_object_or_404(Room, id=room_id)
+    if not room:
+        return redirect('orders')
+    room.status= 'deleted'
+    room.save()
+    return redirect('rooms')
+                   
 #  -----------------------------------Public view---------------------------------------
 
 #---------------------------------- create user 
@@ -247,8 +292,15 @@ def LoginUser(request):
 # ---------------------------------Logout
 @api_view(['POST'])
 def Logout(request):
-    logout(request)
-    return Response({"message": "User Logged-Out"})
+    response = Response({"message": "User Logged-Out"})
+    
+    # Delete the token cookie (assuming your auth token is stored in 'access_token')
+    response.delete_cookie('access_token')  # adjust cookie name if different
+    
+    # If you have a refresh token cookie, delete it too
+    response.delete_cookie('refresh_token')
+    
+    return response
 
 #---------------------------- get current user
 @api_view(['GET'])
@@ -282,7 +334,7 @@ def GetAllProducts(request):
     page = int(request.query_params.get('page', 1))
     limit = int(request.query_params.get('limit', 50))
     
-    product = Room.objects.all()
+    product = Room.objects.all().exclude(status='deleted')
     if room_type != "All":
         product = product.filter(category=room_type)
     
@@ -318,8 +370,10 @@ def getProduct(request, slug):
 def CreateOrders(request):
     token = request.COOKIES.get('access_token')
     print(request.COOKIES.get('access_token'))
+    
     if not token:
         return Response({'error': "Not Authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+    
     try:
         jwt_auth = JWTAuthentication()
         validated_token = jwt_auth.get_validated_token(token)
@@ -330,7 +384,10 @@ def CreateOrders(request):
     data = request.data
     if not isinstance(data, list):
         return Response({'error': 'Items must be a list'}, status=status.HTTP_400_BAD_REQUEST)
+
     items_for_serializer = []
+    total_amount = 0
+
     for item in data:
         uuid = item.get('uuid')
         if not uuid:
@@ -341,14 +398,44 @@ def CreateOrders(request):
             return Response({'error': f'Room {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
 
         items_for_serializer.append({
-            'room': room
+            'room': room.id
         })
-    serializer = OrdersSerializer(data={}, context={'user': user, 'orderitems_data': items_for_serializer})
+        total_amount += room.price
+
+    serializer_data = {
+        'orderitems': items_for_serializer
+    }
+    
+    # Pass user and total_amount in context
+    serializer = OrdersSerializer(data=serializer_data, context={
+        'user': user,
+        'total_amount': total_amount,
+    })
+
     if serializer.is_valid():
         order = serializer.save()
         return Response(OrdersSerializer(order).data, status=status.HTTP_201_CREATED)
+    
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# ------------------------getReserved Rooms -------
+@api_view(['GET'])
+def GetReserveRoom(request):
+    token = request.COOKIES.get('access_token')
+    if not token:
+        return Response({'error': "Not Authenticated"}, 401)
+    try:
+        access_token = AccessToken(token)
+        user_id = access_token['user_id']
+        print("user id:", user_id)
+        #  getting reserved that match of user id 
+        order = OrderItems.objects.filter(order__user_id=user_id).select_related('room', 'order').order_by('-id')
+        print("orders: ", order)
+        serializer = OrderItemsSerializer(order, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        print("ERROR:", e)
+        return Response({'error': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
 
     
         

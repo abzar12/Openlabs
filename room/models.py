@@ -24,6 +24,9 @@ class User(AbstractUser):
 
 class Amenities(models.Model):
     name = models.CharField(max_length=200, blank=True, null=True)
+    class Meta:
+        verbose_name = "Amenities"
+        verbose_name_plural = "Amenities"
     def __str__(self):
         return self.name
     
@@ -44,6 +47,7 @@ class Room(models.Model):
     bathroom = models.IntegerField(default=1, blank=False)
     amenities = models.ManyToManyField(Amenities, blank=True)
     description = models.TextField(null=False)
+    status=models.CharField(default='active', blank=True, null=True)
     images = models.ImageField(upload_to= "products/", null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -73,6 +77,9 @@ class Orders(models.Model):
     order_status = models.CharField(max_length=100, default="pending")
     created_at = models.DateTimeField(auto_now_add=True)
     
+    class Meta:
+        verbose_name = "Orders"
+        verbose_name_plural = "Orders"
     def save(self, *arg, **kwargs):
         if not self.order_number:
             year = now().year
@@ -86,11 +93,13 @@ class Orders(models.Model):
         super().save(*arg, **kwargs)
         
     def __str__(self):
-        return self.order_number or self.room
+        return self.order_number or self.user
 class OrderItems(models.Model):
     order = models.ForeignKey(Orders, on_delete=models.CASCADE, related_name='orderitems')
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='orderitems')
     amount = models.DecimalField(max_digits=10, decimal_places=2)  # room.price * quantity
-    
+    class Meta:
+        verbose_name = "OrderItems"
+        verbose_name_plural = "OrderItems"
     def __str__(self):
-        return self.order or self.room
+        return f"{self.room} - {self.amount}"

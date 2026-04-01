@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{%load static%}
+{% block title %} Order Items - Room Marketplace {% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="">
+                    <h3 class="card-title">Booked Room</h3>
+                </div>
+                {% if orderAmount %}
+                <div class="d-flex flex-wrap align-items-center">
+                    <h5 class="font-weight-bold">Total Amount:</h5>
+                    <p class="ml-3 pt-2">{{ orderAmount.total_amount}} GHs</p>
+                </div>
+                {% if count %}
+                 <div class="d-flex flex-wrap align-items-center">
+                    <h5 class="font-weight-bold">Total Amount:</h5>
+                    <p class="ml-3 pt-2">{{ count }} Rooms </p>
+                </div>
+                {% endif %}
+                 
+                {% endif %}
+                <div class="card-tools d-flex flex-justify-content-end text-end">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover table-striped text-nowrap">
+                    <thead>
+                        <tr>
+                            <th class="text-center">Book Number</th>
+                            <th class="text-center">Customer Email</th>
+                            <th class="text-center">Reference</th>
+                            <th class="text-center">Price</th>
+                            <th class="text-center">Room Location</th>
+                            <th class="text-center">Apayment Status</th>
+                            <th class="text-center">Order Status</th>
+                            <th class="text-center">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Django loop -->
+                        {% for orderitem in order_Items %}
+                        <tr>
+                            <td class="text-center">{{ orderitem.order.order_number }}</td>
+                            <td class="text-center">{{ orderitem.order.user.email }}</td>
+                            <td class="text-center">{{ orderitem.order.reference }}</td>
+                            <td class="text-center">{{ orderitem.room.price }}</td>
+                            <td class="text-center">{{ orderitem.room.location }}</td>
+                            <td class="text-center">{{ orderitem.order.payment_status }}</td>
+                            <td class="text-center">{{ orderitem.order.order_status }}</td>
+                            <td class="text-center">{{ orderitem.order.created_at|date:"Y-m-d" }}</td>
+                            <!-- <td class="text-center">{{ orderitem.description|truncatechars:50 }}</td> -->
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center">No order items</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer text-right">
+                <a href="{% url 'orders' %}" class="btn btn-sm btn-primary">Back to Orders</a>
+            </div>
+        </div>
+    </div>
+</div>
+{%endblock%}

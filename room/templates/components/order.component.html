@@ -41,7 +41,7 @@
           <td class="text-center">{{ order.created_at|date:"Y-m-d" }}</td>
           <td class="text-center">{{ order.total_amount }} <span class="text-sm font-weight-bold">GHS</span></td>
           <td class="text-center">
-            <a href="#" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a>
+            <a href="{% url 'vieworder_items' order.id %}" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a>
             {% if order.order_status == 'confirmed' %}
             <a href="{% url 'edit_status' order.id %}?status=completed" class="btn btn-sm btn-outline-success"><i
                 class="fas fa-check-double"></i></a>

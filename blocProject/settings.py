@@ -34,6 +34,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,6 +46,31 @@ INSTALLED_APPS = [
     'room',
     "corsheaders",
 ]
+# ---------------jazzmin 
+JAZZMIN_SETTINGS = {
+    "site_title": "My Admin",
+    "site_header": "My Dashboard",
+    "site_brand": "Sissoko-Room",
+    "hide_apps": ["auth"],
+    "hide_models": ["auth.Group"],
+    "show_version": False,
+    "welcome_sign": "Welcome to the Sissoko-Room Panel",
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "room.Room": "fas fa-bed",
+        "room.Orders": "fas fa-shopping-cart",
+        "room.OrderItems": "fas fa-shopping-cart",
+        "room.Amenities": "fas fa-list",
+        "room.User": "fas fa-user",
+    },
+    "copyright": "Sissoko-Room",
+}
+JAZZMIN_UI_TWEAKS = {
+   "theme": "flatly",
+    "navbar": "navbar-white navbar-light",
+    "brand_colour": "navbar-primary",
+    "accent": "accent-primary",
+}
 # --------------JWT Authentification
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
